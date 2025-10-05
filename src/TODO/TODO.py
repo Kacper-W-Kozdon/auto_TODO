@@ -1,4 +1,8 @@
 import pathlib
+from typing import Union
+excluded: Union[list[str], None] = None
+todo_list_name: Union[str, None] = None
+project_name: Union[str, None] = None
 
 if __name__ == "__main__":
     proj_path = pathlib.Path(__file__).parent
@@ -6,19 +10,14 @@ if __name__ == "__main__":
     scripts = []
 
     for script in scripts_paths_generator:
-        # print("tests" in str(script))
-        if (
-            "TODO" not in str(script)
-            and "__init__" not in str(script)
-            and "cache" not in str(script)
-            and ".pdf" not in str(script)
-            and "Contini.m" not in str(script)
-        ):
+        if not excluded:
+            scripts.append(script)
+            continue
+        
+        if all([excluded_item not in str(script) for excluded_item in excluded]):
             scripts.append(script)
 
-    # print(scripts)
-
-    todo_text = "# SLAB Project\n\n ## TODO list:\n\n"
+    todo_text = f"# {project_name}\n\n ## {todo_list_name}:\n\n"
 
     old_todo_text = ""
 
@@ -53,7 +52,7 @@ if __name__ == "__main__":
 
         todo_out.write(todo_text)
 
-    readmemd_text = "# SLAB Project\n\n## TODO list:\n\n"
+    readmemd_text = f"# {project_name}\n\n## {todo_list_name}:\n\n"
     readmemd_text_old = ""
 
     with open(f"{proj_path}\\TODO.md", "r") as READMEmd_old:
@@ -86,7 +85,7 @@ if __name__ == "__main__":
 
         with open(f"{proj_path}\\TODO.txt", "r") as READMEmd_in:
             for line_todo in READMEmd_in:
-                if "# SLAB Project" in line_todo or "## TODO list:" in line_todo:
+                if f"# {project_name}" in line_todo or f"## {todo_list_name}:" in line_todo:
                     continue
 
                 elif line_todo not in readmemd_text:
