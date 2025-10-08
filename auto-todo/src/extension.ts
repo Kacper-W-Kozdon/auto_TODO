@@ -1,7 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
-import { execFile } from "child_process";
+import { exec } from "child_process";
 
 let path = require("path");
 
@@ -24,8 +24,6 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  let scriptPath = path.join(__dirname, "../../src/TODO");
-
   const runAutoTodo = vscode.commands.registerCommand(
     "auto-todo.runAutoTodo",
     () => {
@@ -37,10 +35,13 @@ export function activate(context: vscode.ExtensionContext) {
 
       const workspacePath = workspaceFolders[0].uri.fsPath;
 
-      execFile(
-        "python",
-        ["-m", `${scriptPath}/TODO.py`, "--workspacePath", workspacePath],
-        { cwd: workspacePath },
+      console.log(`Entered "auto-todo.runAutoTodo". CWD: ${workspacePath}`);
+      vscode.window.showInformationMessage('Entered "auto-todo.runAutoTodo"');
+
+      exec(
+        `python ${workspacePath}\\TODO.py`,
+        // ["", `${workspacePath}\\testTODOplaceholer.py`],
+        // { cwd: workspacePath },
         (error, stdout, stderr) => {
           if (error) {
             vscode.window.showErrorMessage(`Error: ${error.message}`);
