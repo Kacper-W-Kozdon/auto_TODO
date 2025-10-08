@@ -24,7 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  let scriptPath = path.join(__dirname, ".../src/TODO");
+  let scriptPath = path.join(__dirname, "../../src/TODO");
 
   const runAutoTodo = vscode.commands.registerCommand(
     "auto-todo.runAutoTodo",
