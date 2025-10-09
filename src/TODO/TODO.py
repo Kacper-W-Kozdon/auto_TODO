@@ -1,10 +1,53 @@
+import argparse
+import copy
 import pathlib
+import sys
+from distutils.util import strtobool
 from typing import Union
+
 excluded: Union[list[str], None] = None
 todo_list_name: Union[str, None] = None
 project_name: Union[str, None] = None
 
-if __name__ == "__main__":
+parser = argparse.ArgumentParser(
+    prog="auto_todo",
+    description="The VSC extension to create and push TODO lists to the list of issues in your git repo.",
+    epilog="For instructions on the usage or for the contact information go to README.md",
+)
+
+# parser.add_argument('filename')
+parser.add_argument("cwd")  # positional argument
+parser.add_argument(
+    "-d",
+    "--debug",
+    help="Set to True for debugging, otherwise False.",
+    default=False,
+    choices=[True, False],
+)  # option that takes a value
+parser.add_argument("-v", "--verbose", action="store_true")  # on/off flag
+
+
+class Passed_Args:
+    pass
+
+
+def main() -> None:
+    passed_args = Passed_Args()
+    sys_args = copy.copy(sys.argv[1:])
+    args = map(
+        lambda arg: arg if arg not in ["False", "True"] else strtobool(arg), sys_args
+    )
+    parser.parse_args(args=args, namespace=passed_args)
+
+    proj_path = passed_args.cwd
+
+    if passed_args.debug is True:
+        print(f"Debugging {passed_args.filename}.")
+        print(f"Arguments: {dir(passed_args)}.")
+        print("Help messages:\n")
+        print(f"{parser.print_help()}")
+        return
+
     proj_path = pathlib.Path(__file__).parent
     scripts_paths_generator = proj_path.glob("**/*.py")
     scripts = []
@@ -13,7 +56,7 @@ if __name__ == "__main__":
         if not excluded:
             scripts.append(script)
             continue
-        
+
         if all([excluded_item not in str(script) for excluded_item in excluded]):
             scripts.append(script)
 
@@ -85,7 +128,10 @@ if __name__ == "__main__":
 
         with open(f"{proj_path}\\TODO.txt", "r") as READMEmd_in:
             for line_todo in READMEmd_in:
-                if f"# {project_name}" in line_todo or f"## {todo_list_name}:" in line_todo:
+                if (
+                    f"# {project_name}" in line_todo
+                    or f"## {todo_list_name}:" in line_todo
+                ):
                     continue
 
                 elif line_todo not in readmemd_text:
@@ -96,3 +142,8 @@ if __name__ == "__main__":
             :-1
         ]  # Ignores the final blank line in the .txt file.
         READMEmd_out.write(readmemd_text)
+        return
+
+
+if __name__ == "__main__":
+    main()

@@ -33,27 +33,34 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
 
+      const extensionPath = path.join(__dirname, "../../src/TODO");
+
       const workspacePath = workspaceFolders[0].uri.fsPath;
 
-      console.log(`Entered "auto-todo.runAutoTodo". CWD: ${workspacePath}`);
+      console.log(
+        `Entered "auto-todo.runAutoTodo". CWD: ${workspacePath}, extension script directory: ${extensionPath}`
+      );
       vscode.window.showInformationMessage('Entered "auto-todo.runAutoTodo"');
 
       exec(
-        `python ${workspacePath}\\TODO.py`,
+        `python ${extensionPath}\\TODO.py --debug False '${workspacePath}'`,
         // ["", `${workspacePath}\\testTODOplaceholer.py`],
         // { cwd: workspacePath },
         (error, stdout, stderr) => {
           if (error) {
             vscode.window.showErrorMessage(`Error: ${error.message}`);
+            console.log(`Error: ${error.message}`);
             return;
           }
           if (stderr) {
             vscode.window.showErrorMessage(`stderr: ${stderr}`);
+            console.log(`stderr: ${stderr}`);
             return;
           }
           vscode.window.showInformationMessage(
             `auto-todo completed:\n${stdout}`
           );
+          console.log(`auto-todo completed:\n${stdout}`);
         }
       );
     }
