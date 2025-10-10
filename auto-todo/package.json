@@ -12,6 +12,10 @@
       {
         "command": "auto-todo.runAutoTodo",
         "title": "Auto Todo: Run Auto Todo"
+      },
+      {
+        "command": "auto-todo.debug",
+        "title": "Auto Todo: Debug Mode On/Off"
       }
     ]
   },

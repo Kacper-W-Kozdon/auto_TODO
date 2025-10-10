@@ -15,14 +15,14 @@ parser = argparse.ArgumentParser(
     epilog="For instructions on the usage or for the contact information go to README.md",
 )
 
-# parser.add_argument('filename')
+parser.add_argument("filename")
 parser.add_argument("cwd")  # positional argument
 parser.add_argument(
     "-d",
     "--debug",
     help="Set to True for debugging, otherwise False.",
-    default=False,
-    choices=[True, False],
+    default="False",
+    choices=["False", "True", "T", "F", "true", "false", "t", "f"],
 )  # option that takes a value
 parser.add_argument("-v", "--verbose", action="store_true")  # on/off flag
 
@@ -33,20 +33,25 @@ class Passed_Args:
 
 def main() -> None:
     passed_args = Passed_Args()
-    sys_args = copy.copy(sys.argv[1:])
-    args = map(
-        lambda arg: arg if arg not in ["False", "True"] else strtobool(arg), sys_args
-    )
-    parser.parse_args(args=args, namespace=passed_args)
+    sys_args = copy.copy(sys.argv[:])
+    # args = list(map(
+    #     lambda arg: arg if arg not in ["False", "True", "T", "F", "true", "false", "t", "f"] else strtobool(arg), sys_args
+    # ))
+    # for arg in sys_args:
+    #     print(arg)
+    # for arg in args:
+    #     print(arg)
+
+    parser.parse_args(args=sys_args, namespace=passed_args)
 
     proj_path = passed_args.cwd
-
-    if passed_args.debug is True:
+    print(passed_args.debug, type(passed_args.debug))
+    if strtobool(passed_args.debug) is True:
         print(f"Debugging {passed_args.filename}.")
         print(f"Arguments: {dir(passed_args)}.")
         print("Help messages:\n")
         print(f"{parser.print_help()}")
-        return
+        return "Debugging message ends here."
 
     proj_path = pathlib.Path(__file__).parent
     scripts_paths_generator = proj_path.glob("**/*.py")

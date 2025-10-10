@@ -5,6 +5,16 @@ import { exec } from "child_process";
 
 let path = require("path");
 
+class Extension {
+  debug: boolean;
+
+  constructor() {
+    this.debug = false;
+  }
+}
+
+let extension = new Extension();
+
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -21,6 +31,18 @@ export function activate(context: vscode.ExtensionContext) {
       // The code you place here will be executed every time your command is executed
       // Display a message box to the user
       vscode.window.showInformationMessage("Hello World from auto_todo!");
+    }
+  );
+
+  let debugExtension = vscode.commands.registerCommand(
+    "auto-todo.debug",
+    () => {
+      extension.debug = !extension.debug;
+      console.log(`Debug: ${!extension.debug} -> ${extension.debug}`);
+      vscode.window.showInformationMessage(
+        `Debug: ${!extension.debug} -> ${extension.debug}`
+      );
+      return extension.debug;
     }
   );
 
@@ -43,7 +65,7 @@ export function activate(context: vscode.ExtensionContext) {
       vscode.window.showInformationMessage('Entered "auto-todo.runAutoTodo"');
 
       exec(
-        `python ${extensionPath}\\TODO.py --debug False '${workspacePath}'`,
+        `python ${extensionPath}\\TODO.py --debug ${extension.debug.toString()} '${workspacePath}'`,
         // ["", `${workspacePath}\\testTODOplaceholer.py`],
         // { cwd: workspacePath },
         (error, stdout, stderr) => {
@@ -68,6 +90,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(disposable);
   context.subscriptions.push(runAutoTodo);
+  context.subscriptions.push(debugExtension);
 }
 
 // This method is called when your extension is deactivated
