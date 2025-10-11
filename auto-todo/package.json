@@ -17,6 +17,34 @@
         "command": "auto-todo.debug",
         "title": "Auto Todo: Debug Mode On/Off"
       }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "auto-todo.runAutoTodo",
+          "when": "view == auto-todo-view"
+        },
+        {
+          "command": "auto-todo.debug",
+          "when": "view == auto-todo-view"
+        }
+      ]
+    },
+    "views": {
+      "explorer": [
+        {
+          "contents": "View and manage your automated TODO lists here.",
+          "contextualTitle": "Auto Todo",
+          "id": "auto-todo-view",
+          "name": "Auto Todo"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "contents": "[Run Auto Todo](command:auto-todo.runAutoTodo)",
+        "view": "auto-todo-view"
+      }
     ]
   },
   "description": "The package for use to automate creation and updating TODO lists from comments collected from the project's files.",
