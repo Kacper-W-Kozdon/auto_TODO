@@ -6,28 +6,38 @@ from pymongo import MongoClient
 
 uri: str = "mongodb://localhost:27017/"
 client: MongoClient = MongoClient(uri)
+auto_todo_db_name = "auto-todo-local"
 
-database = client["auto-todo-local"]
 
-placeholder_path = f"{pathlib.Path(__file__).parent.parent.resolve()}\\tests\\TODO.md"
+def main(project_name: str = "", project_path: str = ".\\TODO.md") -> None:
+    database = client["auto-todo-local"]
 
-issues_collection_name: str = "list-issues"
-if issues_collection_name not in database.list_collection_names():
-    database.create_collection(issues_collection_name)
+    test_path = "\\tests\\TODO.md"
+    placeholder_path = f"{pathlib.Path(__file__).parent.parent.resolve()}{test_path}"
 
-placeholder_file = open(placeholder_path)
-encoded_file = bson.encode({"test": placeholder_file.read()})
+    issues_collection_name: str = "list-issues"
+    if issues_collection_name not in database.list_collection_names():
+        database.create_collection(issues_collection_name)
 
-print(encoded_file)
+    placeholder_file = open(placeholder_path)
+    project_file = open(project_path)
 
-issues_collection = database.get_collection("list-issues")
-issues_collection.insert_one({"issues": encoded_file})
-issues_collection.find_one("id = 1")
+    encoded_file = bson.encode({project_name: placeholder_file.read()})
 
-with issues_collection.find() as cursor:
-    for doc in cursor:
-        print(bson.decode(doc.get("issues")))
+    encoded_issues = bson.encode({project_name: project_file.read()})
 
-mongodb_path = pathlib.Path("D:\\Program Files (x86)\\GOG Galaxy\\Games\\Gex").resolve()
-# dir /a:-d /b/s *Loader.exe
-os.system(f"D: && cd {mongodb_path} && Loader.exe")
+    print(encoded_file)
+
+    issues_collection = database.get_collection("list-issues")
+    issues_collection.insert_one({f"{project_name}_issues": encoded_file})
+    issues_collection.insert_one({f"{project_name}_issues": encoded_issues})
+
+    with issues_collection.find() as cursor:
+        for doc in cursor:
+            print(bson.decode(doc.get(f"{project_name}_issues")))
+
+    mongodb_path = pathlib.Path(
+        "D:\\Program Files (x86)\\GOG Galaxy\\Games\\Gex"
+    ).resolve()
+    # dir /a:-d /b/s *Loader.exe
+    os.system(f"D: && cd {mongodb_path} && Loader.exe")
