@@ -41,7 +41,6 @@ class DBManager:
         self, project_name: str = "", project_path: str = ".\\TODO.md"
     ) -> None:
         now = datetime.datetime.now()
-        max_num_documents = self.max_num_documents
 
         issues_collection_name: str = project_name
 
@@ -49,7 +48,6 @@ class DBManager:
             time=now,
             issues_collection_name=issues_collection_name,
             project_path=project_path,
-            max_num_documents=max_num_documents,
         )
 
         raise NotImplementedError
