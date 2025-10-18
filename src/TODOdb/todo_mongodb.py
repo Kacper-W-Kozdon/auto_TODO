@@ -1,5 +1,4 @@
 import datetime
-import pathlib
 from typing import Any, Union
 
 import bson
@@ -50,7 +49,7 @@ class DBManager:
             project_path=project_path,
         )
 
-        raise NotImplementedError
+        # raise NotImplementedError
 
     def update(
         self,
@@ -58,30 +57,40 @@ class DBManager:
         issues_collection_name: str = "",
         project_path: str = ".\\TODO.md",
     ) -> None:
+        """
+        The update method updates the mongodb database with the most recent issues.
+
+        :param time:
+        :type time:
+        :param issues_collection_name:
+        :type issues_collection_name:
+        :param project_path:
+        :type project_path:
+        """
         max_num_documents = self.max_num_documents
         now = time
-        database = self._database
+        db = self._database
 
-        placeholder_name = "placeholder_name"
-        test_path = "\\tests\\TODO.md"
-        placeholder_path = (
-            f"{pathlib.Path(__file__).parent.parent.resolve()}{test_path}"
-        )
+        # placeholder_name = "placeholder_name"
+        # test_path = "\\tests\\TODO.md"
+        # placeholder_path = (
+        #     f"{pathlib.Path(__file__).parent.parent.resolve()}{test_path}"
+        # )
 
-        if issues_collection_name not in database.list_collection_names():
-            database.create_collection(issues_collection_name)
+        if issues_collection_name not in db.list_collection_names():
+            db.create_collection(issues_collection_name)
 
-        placeholder_file = open(placeholder_path)
+        # placeholder_file = open(placeholder_path)
         project_file = open(project_path)
 
-        encoded_file = bson.encode({placeholder_name: placeholder_file.read()})
+        # encoded_file = bson.encode({placeholder_name: placeholder_file.read()})
 
         encoded_issues = bson.encode({"issues": project_file.read()})
 
-        print(encoded_file)
+        # print(encoded_file)
 
-        issues_collection = database.get_collection(issues_collection_name)
-        issues_collection.insert_one({"time": now, "issues": encoded_file})
+        issues_collection = db.get_collection(issues_collection_name)
+        # issues_collection.insert_one({"time": now, "issues": encoded_file})
         issues_collection.insert_one({"time": now, "issues": encoded_issues})
 
         while issues_collection.count_documents({}) > max_num_documents:
@@ -94,6 +103,11 @@ class DBManager:
             for doc in cursor:
                 print(bson.decode(doc.get("issues")))
                 print(doc.get("time"))
+
+    def compare_with_git(self) -> None:
+        raise NotImplementedError
+
+    def update_git_issues(self) -> None:
         raise NotImplementedError
 
     # mongodb_path = pathlib.Path(
