@@ -1,60 +1,105 @@
 import datetime
-import os
 import pathlib
+from typing import Any, Optional, Union
 
 import bson
-from pymongo import MongoClient
-
-uri: str = "mongodb://localhost:27017/"
-client: MongoClient = MongoClient(uri)
-auto_todo_db_name = "auto-todo-local"
-max_num_documents = 10
+from pymongo import MongoClient, database
 
 
-def main(project_name: str = "", project_path: str = ".\\TODO.md") -> None:
-    database = client["auto-todo-local"]
+class DBManager:
+    """Manager class for the mongo database storing issues.
+    :param uri:
+    :type uri:
+    :param max_num_documents:
+    :type max_num_documents:
 
-    now = datetime.datetime.now()
+    """
 
-    placeholder_name = "placeholder_name"
-    test_path = "\\tests\\TODO.md"
-    issues_collection_name: str = "list-issues"
+    _client: Optional[MongoClient] = None
+    _instance = None
 
-    placeholder_path = f"{pathlib.Path(__file__).parent.parent.resolve()}{test_path}"
+    def __new__(cls) -> Any:
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._client = MongoClient()
+        return cls._instance
 
-    if issues_collection_name not in database.list_collection_names():
-        database.create_collection(issues_collection_name)
+    def __init__(
+        self,
+        uri: str = "mongodb://localhost:27017/",
+        auto_todo_db_name: str = "auto-todo-local",
+        max_num_documents: int = 10,
+    ) -> None:
+        if not isinstance(self._client, MongoClient):
+            raise TypeError("MongoClient was not properly initiated.")
 
-    placeholder_file = open(placeholder_path)
-    project_file = open(project_path)
+        self._client.uri = uri
+        self._database: database.Database = self._client[auto_todo_db_name]
+        self.max_num_documents = max_num_documents
 
-    encoded_file = bson.encode({placeholder_name: placeholder_file.read()})
+    def __call__(
+        self, project_name: str = "", project_path: str = ".\\TODO.md"
+    ) -> None:
+        now = datetime.datetime.now()
+        max_num_documents = self.max_num_documents
 
-    encoded_issues = bson.encode({project_name: project_file.read()})
+        issues_collection_name: str = project_name
 
-    print(encoded_file)
+        self.update(
+            time=now,
+            issues_collection_name=issues_collection_name,
+            project_path=project_path,
+            max_num_documents=max_num_documents,
+        )
 
-    issues_collection = database.get_collection("list-issues")
-    issues_collection.insert_one(
-        {"time": now, "name": placeholder_name, "issues": encoded_file}
-    )
-    issues_collection.insert_one(
-        {"time": now, "name": project_name, "issues": encoded_issues}
-    )
+        raise NotImplementedError
 
-    while issues_collection.count_documents({}) > max_num_documents:
-        oldest_issues_id = issues_collection.find_one(
-            {"time": {"$exists": "true"}}, sort=[("time", 1)]
-        ).get("id")
-        issues_collection.delete_one({"_id": oldest_issues_id})
+    def update(
+        self,
+        time: Union[None, datetime.datetime] = None,
+        issues_collection_name: str = "",
+        project_path: str = ".\\TODO.md",
+    ) -> None:
+        max_num_documents = self.max_num_documents
+        now = time
+        database = self._database
 
-    with issues_collection.find() as cursor:
-        for doc in cursor:
-            print(bson.decode(doc.get("issues")))
-            print(doc.get("time"))
+        placeholder_name = "placeholder_name"
+        test_path = "\\tests\\TODO.md"
+        placeholder_path = (
+            f"{pathlib.Path(__file__).parent.parent.resolve()}{test_path}"
+        )
 
-    mongodb_path = pathlib.Path(
-        "D:\\Program Files (x86)\\GOG Galaxy\\Games\\Gex"
-    ).resolve()
+        if issues_collection_name not in database.list_collection_names():
+            database.create_collection(issues_collection_name)
+
+        placeholder_file = open(placeholder_path)
+        project_file = open(project_path)
+
+        encoded_file = bson.encode({placeholder_name: placeholder_file.read()})
+
+        encoded_issues = bson.encode({"issues": project_file.read()})
+
+        print(encoded_file)
+
+        issues_collection = database.get_collection(issues_collection_name)
+        issues_collection.insert_one({"time": now, "issues": encoded_file})
+        issues_collection.insert_one({"time": now, "issues": encoded_issues})
+
+        while issues_collection.count_documents({}) > max_num_documents:
+            oldest_issues_id = issues_collection.find_one(
+                {"time": {"$exists": "true"}}, sort=[("time", 1)]
+            ).get("id")
+            issues_collection.delete_one({"_id": oldest_issues_id})
+
+        with issues_collection.find() as cursor:
+            for doc in cursor:
+                print(bson.decode(doc.get("issues")))
+                print(doc.get("time"))
+        raise NotImplementedError
+
+    # mongodb_path = pathlib.Path(
+    #     "D:\\Program Files (x86)\\GOG Galaxy\\Games\\Gex"
+    # ).resolve()
     # dir /a:-d /b/s *Loader.exe
-    os.system(f"D: && cd {mongodb_path} && Loader.exe")
+    # os.system(f"D: && cd {mongodb_path} && Loader.exe")
