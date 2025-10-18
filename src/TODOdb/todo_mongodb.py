@@ -1,6 +1,6 @@
 import datetime
 import pathlib
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 import bson
 from pymongo import MongoClient, database
@@ -10,18 +10,18 @@ class DBManager:
     """Manager class for the mongo database storing issues.
     :param uri:
     :type uri:
+    :param auto_todo_db_name:
+    :type auto_todo_db_name:
     :param max_num_documents:
     :type max_num_documents:
 
     """
 
-    _client: Optional[MongoClient] = None
-    _instance = None
-
     def __new__(cls) -> Any:
-        if cls._instance is None:
+        if getattr(cls, "_instance", None) is None:
             cls._instance = super().__new__(cls)
             cls._instance._client = MongoClient()
+
         return cls._instance
 
     def __init__(
