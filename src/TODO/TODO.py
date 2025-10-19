@@ -5,33 +5,12 @@ import sys
 from distutils.util import strtobool
 from typing import Union
 
-excluded: Union[list[str], None] = None
-todo_list_name: Union[str, None] = None
-project_name: Union[str, None] = None
-
-parser = argparse.ArgumentParser(
-    prog="auto_todo",
-    description="The VSC extension to create and push TODO lists to the list of issues in your git repo.",
-    epilog="For instructions on the usage or for the contact information go to README.md",
-)
-
-parser.add_argument("filename")
-parser.add_argument("cwd")  # positional argument
-parser.add_argument(
-    "-d",
-    "--debug",
-    help="Set to True for debugging, otherwise False.",
-    default="False",
-    choices=["False", "True", "T", "F", "true", "false", "t", "f"],
-)  # option that takes a value
-parser.add_argument("-v", "--verbose", action="store_true")  # on/off flag
-
 
 class Passed_Args:
     pass
 
 
-def main() -> None:
+def main(arg_parser: argparse.ArgumentParser) -> None:
     passed_args = Passed_Args()
     sys_args = copy.copy(sys.argv[:])
     # args = list(map(
@@ -42,7 +21,7 @@ def main() -> None:
     # for arg in args:
     #     print(arg)
 
-    parser.parse_args(args=sys_args, namespace=passed_args)
+    arg_parser.parse_args(args=sys_args, namespace=passed_args)
 
     proj_path = passed_args.cwd
     print(passed_args.debug, type(passed_args.debug))
@@ -50,7 +29,7 @@ def main() -> None:
         print(f"Debugging {passed_args.filename}.")
         print(f"Arguments: {dir(passed_args)}.")
         print("Help messages:\n")
-        print(f"{parser.print_help()}")
+        print(f"{arg_parser.print_help()}")
         return "Debugging message ends here."
 
     proj_path = pathlib.Path(__file__).parent
@@ -151,4 +130,25 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    excluded: Union[list[str], None] = None
+    todo_list_name: Union[str, None] = None
+    project_name: Union[str, None] = None
+
+    parser = argparse.ArgumentParser(
+        prog="auto_todo",
+        description="The VSC extension to create and push TODO lists to the list of issues in your git repo.",
+        epilog="For instructions on the usage or for the contact information go to README.md",
+    )
+
+    parser.add_argument("filename")
+    parser.add_argument("cwd")  # positional argument
+    parser.add_argument(
+        "-d",
+        "--debug",
+        help="Set to True for debugging, otherwise False.",
+        default="False",
+        choices=["False", "True", "T", "F", "true", "false", "t", "f"],
+    )  # option that takes a value
+    parser.add_argument("-v", "--verbose", action="store_true")  # on/off flag
+
+    main(arg_parser=parser)
