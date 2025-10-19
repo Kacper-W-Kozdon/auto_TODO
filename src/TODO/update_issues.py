@@ -6,42 +6,6 @@ import requests.sessions
 from dotenv import load_dotenv
 from requests import ConnectionError, Request, Session
 
-load_dotenv()
-
-todo_body = []
-
-root = pathlib.Path(__file__).parent.resolve()
-print(root)
-
-with open(f"{root}\\TODO.md", "r") as todo_file:
-    for line in todo_file:
-        line = line.replace("\n", "")
-        line = line.replace("\\", "")
-        line = line.replace('"', "'")
-        todo_body.append(line)
-
-todo_body_text = "".join(todo_body)
-
-token = os.getenv("TOKEN")
-
-url = "https://api.github.com/repos/Kacper-W-Kozdon/slab/issues/1"
-markdown_url = "https://api.github.com/markdown"
-
-authorize_headers: dict[str, str] = {
-    "Accept": "application/vnd.github+json",
-    "Authorization": f"Bearer {token}",
-    "X-GitHub-Api-Version": "2022-11-28",
-}
-markdown_headers: dict[str, str] = {
-    "X-GitHub-Api-Version": "2022-11-28",
-    "Accept": "text/html",
-    "Authorization": f"Bearer {token}",
-}
-
-markdown_data = todo_body
-
-session = Session()
-
 
 def markdown_body(
     url: str,
@@ -62,9 +26,6 @@ def markdown_body(
     ret = ret.replace("\n", "")
     ret = ret.replace('"', "'")
     return ret
-
-
-print(markdown_body(markdown_url, markdown_headers, session, markdown_data))
 
 
 def update_TODO(
@@ -111,13 +72,54 @@ def create_TODO(
     print("SUCCESS")
 
 
-get = Request("GET", url, headers=authorize_headers)
-prepped = get.prepare()
-response = session.send(prepped)
+def main() -> None:
+    load_dotenv()
 
-if response.json().get("id") is not None:
-    body = markdown_body(markdown_url, markdown_headers, session, markdown_data)
-    update_TODO(url, authorize_headers, session, body)
-else:
-    body = markdown_body(markdown_url, markdown_headers, session, markdown_data)
-    create_TODO(url, authorize_headers, session, body)
+    todo_body = []
+
+    root = pathlib.Path(__file__).parent.resolve()
+    print(root)
+
+    with open(f"{root}\\TODO.md", "r") as todo_file:
+        for line in todo_file:
+            line = line.replace("\n", "")
+            line = line.replace("\\", "")
+            line = line.replace('"', "'")
+            todo_body.append(line)
+
+    token = os.getenv("TOKEN")
+
+    url = "https://api.github.com/repos/Kacper-W-Kozdon/slab/issues/1"
+    markdown_url = "https://api.github.com/markdown"
+
+    authorize_headers: dict[str, str] = {
+        "Accept": "application/vnd.github+json",
+        "Authorization": f"Bearer {token}",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    markdown_headers: dict[str, str] = {
+        "X-GitHub-Api-Version": "2022-11-28",
+        "Accept": "text/html",
+        "Authorization": f"Bearer {token}",
+    }
+
+    markdown_data = todo_body
+
+    session = Session()
+
+    get = Request("GET", url, headers=authorize_headers)
+    prepped = get.prepare()
+    response = session.send(prepped)
+
+    print(markdown_body(markdown_url, markdown_headers, session, markdown_data))
+
+    if response.json().get("id") is not None:
+        body = markdown_body(markdown_url, markdown_headers, session, markdown_data)
+        update_TODO(url, authorize_headers, session, body)
+    else:
+        body = markdown_body(markdown_url, markdown_headers, session, markdown_data)
+        create_TODO(url, authorize_headers, session, body)
+
+
+if __name__ == "__main__":
+    main()
