@@ -11,8 +11,6 @@ class Passed_Args:
 
 
 def main(arg_parser: argparse.ArgumentParser) -> None:
-    passed_args = Passed_Args()
-    sys_args = copy.copy(sys.argv[:])
     # args = list(map(
     #     lambda arg: arg if arg not in ["False", "True", "T", "F", "true", "false", "t", "f"] else strtobool(arg), sys_args
     # ))
@@ -20,6 +18,9 @@ def main(arg_parser: argparse.ArgumentParser) -> None:
     #     print(arg)
     # for arg in args:
     #     print(arg)
+    passed_args = Passed_Args()
+    sys_args = copy.copy(sys.argv[:])
+    arg_parser.parse_args(args=sys_args, namespace=passed_args)
 
     arg_parser.parse_args(args=sys_args, namespace=passed_args)
 
@@ -32,7 +33,7 @@ def main(arg_parser: argparse.ArgumentParser) -> None:
         print(f"{arg_parser.print_help()}")
         return "Debugging message ends here."
 
-    proj_path = pathlib.Path(__file__).parent
+    # proj_path = pathlib.Path(__file__).parent
     scripts_paths_generator = proj_path.glob("**/*.py")
     scripts = []
 

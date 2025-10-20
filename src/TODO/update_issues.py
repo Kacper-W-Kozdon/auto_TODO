@@ -1,10 +1,17 @@
+import argparse
 import copy
 import os
 import pathlib
+import sys
+from typing import Union
 
 import requests.sessions
 from dotenv import load_dotenv
 from requests import ConnectionError, Request, Session
+
+
+class Passed_Args:
+    pass
 
 
 def markdown_body(
@@ -72,9 +79,12 @@ def create_TODO(
     print("SUCCESS")
 
 
-def main() -> None:
+def main(arg_parser: argparse.ArgumentParser) -> None:
     load_dotenv()
+    passed_args = Passed_Args()
+    sys_args = copy.copy(sys.argv[:])
 
+    arg_parser.parse_args(args=sys_args, namespace=passed_args)
     todo_body = []
 
     root = pathlib.Path(__file__).parent.resolve()
@@ -122,4 +132,25 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    excluded: Union[list[str], None] = None
+    todo_list_name: Union[str, None] = None
+    project_name: Union[str, None] = None
+
+    parser = argparse.ArgumentParser(
+        prog="auto_todo",
+        description="The VSC extension to create and push TODO lists to the list of issues in your git repo.",
+        epilog="For instructions on the usage or for the contact information go to README.md",
+    )
+
+    parser.add_argument("filename")
+    parser.add_argument("cwd")  # positional argument
+    parser.add_argument(
+        "-d",
+        "--debug",
+        help="Set to True for debugging, otherwise False.",
+        default="False",
+        choices=["False", "True", "T", "F", "true", "false", "t", "f"],
+    )  # option that takes a value
+    parser.add_argument("-v", "--verbose", action="store_true")  # on/off flag
+    main(arg_parser=parser)
