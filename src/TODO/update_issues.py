@@ -82,7 +82,7 @@ def create_TODO(
 def main(arg_parser: argparse.ArgumentParser) -> None:
     load_dotenv()
     passed_args = Passed_Args()
-    sys_args = copy.copy(sys.argv[:])
+    sys_args = copy.copy(sys.argv)
 
     arg_parser.parse_args(args=sys_args, namespace=passed_args)
     todo_body = []

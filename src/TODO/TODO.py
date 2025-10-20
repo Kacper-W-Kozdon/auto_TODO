@@ -19,7 +19,7 @@ def main(arg_parser: argparse.ArgumentParser) -> None:
     # for arg in args:
     #     print(arg)
     passed_args = Passed_Args()
-    sys_args = copy.copy(sys.argv[:])
+    sys_args = copy.copy(sys.argv)
     arg_parser.parse_args(args=sys_args, namespace=passed_args)
 
     arg_parser.parse_args(args=sys_args, namespace=passed_args)
