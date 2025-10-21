@@ -1,46 +1,17 @@
+import argparse
 import copy
 import os
 import pathlib
+import sys
+from typing import Union
 
 import requests.sessions
 from dotenv import load_dotenv
 from requests import ConnectionError, Request, Session
 
-load_dotenv()
 
-todo_body = []
-
-root = pathlib.Path(__file__).parent.resolve()
-print(root)
-
-with open(f"{root}\\TODO.md", "r") as todo_file:
-    for line in todo_file:
-        line = line.replace("\n", "")
-        line = line.replace("\\", "")
-        line = line.replace('"', "'")
-        todo_body.append(line)
-
-todo_body_text = "".join(todo_body)
-
-token = os.getenv("TOKEN")
-
-url = "https://api.github.com/repos/Kacper-W-Kozdon/slab/issues/1"
-markdown_url = "https://api.github.com/markdown"
-
-authorize_headers: dict[str, str] = {
-    "Accept": "application/vnd.github+json",
-    "Authorization": f"Bearer {token}",
-    "X-GitHub-Api-Version": "2022-11-28",
-}
-markdown_headers: dict[str, str] = {
-    "X-GitHub-Api-Version": "2022-11-28",
-    "Accept": "text/html",
-    "Authorization": f"Bearer {token}",
-}
-
-markdown_data = todo_body
-
-session = Session()
+class Passed_Args:
+    pass
 
 
 def markdown_body(
@@ -62,9 +33,6 @@ def markdown_body(
     ret = ret.replace("\n", "")
     ret = ret.replace('"', "'")
     return ret
-
-
-print(markdown_body(markdown_url, markdown_headers, session, markdown_data))
 
 
 def update_TODO(
@@ -111,13 +79,78 @@ def create_TODO(
     print("SUCCESS")
 
 
-get = Request("GET", url, headers=authorize_headers)
-prepped = get.prepare()
-response = session.send(prepped)
+def main(arg_parser: argparse.ArgumentParser) -> None:
+    load_dotenv()
+    passed_args = Passed_Args()
+    sys_args = copy.copy(sys.argv)
 
-if response.json().get("id") is not None:
-    body = markdown_body(markdown_url, markdown_headers, session, markdown_data)
-    update_TODO(url, authorize_headers, session, body)
-else:
-    body = markdown_body(markdown_url, markdown_headers, session, markdown_data)
-    create_TODO(url, authorize_headers, session, body)
+    arg_parser.parse_args(args=sys_args, namespace=passed_args)
+    todo_body = []
+
+    root = pathlib.Path(__file__).parent.resolve()
+    print(root)
+
+    with open(f"{root}\\TODO.md", "r") as todo_file:
+        for line in todo_file:
+            line = line.replace("\n", "")
+            line = line.replace("\\", "")
+            line = line.replace('"', "'")
+            todo_body.append(line)
+
+    token = os.getenv("TOKEN")
+
+    url = "https://api.github.com/repos/Kacper-W-Kozdon/slab/issues/1"
+    markdown_url = "https://api.github.com/markdown"
+
+    authorize_headers: dict[str, str] = {
+        "Accept": "application/vnd.github+json",
+        "Authorization": f"Bearer {token}",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    markdown_headers: dict[str, str] = {
+        "X-GitHub-Api-Version": "2022-11-28",
+        "Accept": "text/html",
+        "Authorization": f"Bearer {token}",
+    }
+
+    markdown_data = todo_body
+
+    session = Session()
+
+    get = Request("GET", url, headers=authorize_headers)
+    prepped = get.prepare()
+    response = session.send(prepped)
+
+    print(markdown_body(markdown_url, markdown_headers, session, markdown_data))
+
+    if response.json().get("id") is not None:
+        body = markdown_body(markdown_url, markdown_headers, session, markdown_data)
+        update_TODO(url, authorize_headers, session, body)
+    else:
+        body = markdown_body(markdown_url, markdown_headers, session, markdown_data)
+        create_TODO(url, authorize_headers, session, body)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    excluded: Union[list[str], None] = None
+    todo_list_name: Union[str, None] = None
+    project_name: Union[str, None] = None
+
+    parser = argparse.ArgumentParser(
+        prog="auto_todo",
+        description="The VSC extension to create and push TODO lists to the list of issues in your git repo.",
+        epilog="For instructions on the usage or for the contact information go to README.md",
+    )
+
+    parser.add_argument("filename")
+    parser.add_argument("cwd")  # positional argument
+    parser.add_argument(
+        "-d",
+        "--debug",
+        help="Set to True for debugging, otherwise False.",
+        default="False",
+        choices=["False", "True", "T", "F", "true", "false", "t", "f"],
+    )  # option that takes a value
+    parser.add_argument("-v", "--verbose", action="store_true")  # on/off flag
+    main(arg_parser=parser)

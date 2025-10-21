@@ -1,11 +1,63 @@
+import argparse
+import copy
 import pathlib
+import sys
+from distutils.util import strtobool
 from typing import Union
-excluded: Union[list[str], None] = None
-todo_list_name: Union[str, None] = None
-project_name: Union[str, None] = None
 
-if __name__ == "__main__":
-    proj_path = pathlib.Path(__file__).parent
+
+class Passed_Args:
+    pass
+
+
+def main(arg_parser: argparse.ArgumentParser) -> tuple[str, Passed_Args]:
+    # args = list(map(
+    #     lambda arg: arg if arg not in ["False", "True", "T", "F", "true", "false", "t", "f"] else strtobool(arg), sys_args
+    # ))
+    # for arg in sys_args:
+    #     print(arg)
+    # for arg in args:
+    #     print(arg)
+    passed_args = Passed_Args()
+    print(f"{sys.argv=}")
+    sys_args = copy.copy(sys.argv)
+    arg_parser.parse_args(args=sys_args, namespace=passed_args)
+
+    arg_parser.parse_args(args=sys_args, namespace=passed_args)
+
+    proj_path = pathlib.Path(passed_args.cwd)
+    project_name = passed_args.project_name
+    todo_list_name = passed_args.list_name
+    excluded = passed_args.excluded
+
+    if "TODO.py" not in excluded:
+        excluded.append("TODO.py")
+
+    TODO_md_file = pathlib.Path(f"{proj_path}\\TODO.md")
+
+    if not TODO_md_file.exists():
+        print(f"Creating file TODO.md at {proj_path=}")
+        file = open(f"{proj_path}\\TODO.md", "w")
+        file.write("")
+        file.close()
+
+    TODO_txt_file = pathlib.Path(f"{proj_path}\\TODO.txt")
+
+    if not TODO_txt_file.exists():
+        print(f"Creating file TODO.txt at {proj_path=}")
+        file = open(f"{proj_path}\\TODO.txt", "w")
+        file.write("")
+        file.close()
+
+    print(passed_args.debug, type(passed_args.debug))
+    if strtobool(passed_args.debug) is True:
+        print(f"Debugging {passed_args.filename}.")
+        print(f"Arguments: {dir(passed_args)}.")
+        print("Help messages:\n")
+        print(f"{arg_parser.print_help()}")
+        return "Debugging message ends here.", passed_args
+
+    # proj_path = pathlib.Path(__file__).parent
     scripts_paths_generator = proj_path.glob("**/*.py")
     scripts = []
 
@@ -13,24 +65,13 @@ if __name__ == "__main__":
         if not excluded:
             scripts.append(script)
             continue
-        
+
         if all([excluded_item not in str(script) for excluded_item in excluded]):
             scripts.append(script)
 
     todo_text = f"# {project_name}\n\n ## {todo_list_name}:\n\n"
 
     old_todo_text = ""
-
-    TODO_md_file = pathlib.Path(f"{proj_path}\\TODO.md")
-
-    if not TODO_md_file.is_file():
-        file = open(f"{proj_path}\\TODO.md", "w")
-        file.close()
-
-    TODO_txt_file = pathlib.Path(f"{proj_path}\\TODO.txt")
-    if not TODO_txt_file.is_file():
-        file = open(f"{proj_path}\\TODO.md", "w")
-        file.close()
 
     with open(f"{proj_path}\\TODO.txt", "r") as old_todo:
         for line in old_todo:
@@ -85,7 +126,10 @@ if __name__ == "__main__":
 
         with open(f"{proj_path}\\TODO.txt", "r") as READMEmd_in:
             for line_todo in READMEmd_in:
-                if f"# {project_name}" in line_todo or f"## {todo_list_name}:" in line_todo:
+                if (
+                    f"# {project_name}" in line_todo
+                    or f"## {todo_list_name}:" in line_todo
+                ):
                     continue
 
                 elif line_todo not in readmemd_text:
@@ -96,3 +140,48 @@ if __name__ == "__main__":
             :-1
         ]  # Ignores the final blank line in the .txt file.
         READMEmd_out.write(readmemd_text)
+        ret = f"TODO list for {project_name=} successfully created.", passed_args
+        return ret
+
+
+if __name__ == "__main__":
+    excluded: Union[list[str], None] = None
+    todo_list_name: Union[str, None] = None
+    project_name: Union[str, None] = None
+
+    parser = argparse.ArgumentParser(
+        prog="auto_todo",
+        description="The VSC extension to create and push TODO lists to the list of issues in your git repo.",
+        epilog="For instructions on the usage or for the contact information go to README.md",
+    )
+
+    parser.add_argument("filename")
+    parser.add_argument("cwd")  # positional argument
+    parser.add_argument(
+        "-d",
+        "--debug",
+        help="Set to True for debugging, otherwise False.",
+        default="False",
+        choices=["False", "True", "T", "F", "true", "false", "t", "f"],
+    )  # option that takes a value
+    parser.add_argument("-v", "--verbose", action="store_true")  # on/off flag
+    parser.add_argument(
+        "-p",
+        "--project_name",
+        default="Project",
+        help="The name of the project displayed as the title of the list.",
+    )
+    parser.add_argument(
+        "-ln",
+        "--list_name",
+        default="TODO list",
+        help="The header preceeding the list.",
+    )
+    parser.add_argument(
+        "-e",
+        "--excldued",
+        nargs="+",
+        help="Files and path to exclude, matched using regex rules.",
+    )
+
+    main(arg_parser=parser)
