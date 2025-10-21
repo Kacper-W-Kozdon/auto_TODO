@@ -10,7 +10,7 @@ class Passed_Args:
     pass
 
 
-def main(arg_parser: argparse.ArgumentParser) -> tuple[str, ...]:
+def main(arg_parser: argparse.ArgumentParser) -> tuple[str, Passed_Args]:
     # args = list(map(
     #     lambda arg: arg if arg not in ["False", "True", "T", "F", "true", "false", "t", "f"] else strtobool(arg), sys_args
     # ))
@@ -19,15 +19,32 @@ def main(arg_parser: argparse.ArgumentParser) -> tuple[str, ...]:
     # for arg in args:
     #     print(arg)
     passed_args = Passed_Args()
+    print(f"{sys.argv=}")
     sys_args = copy.copy(sys.argv)
     arg_parser.parse_args(args=sys_args, namespace=passed_args)
 
     arg_parser.parse_args(args=sys_args, namespace=passed_args)
 
-    proj_path = passed_args.cwd
+    proj_path = pathlib.Path(passed_args.cwd)
     project_name = passed_args.project_name
     todo_list_name = passed_args.list_name
     excluded = passed_args.excluded
+
+    TODO_md_file = pathlib.Path(f"{proj_path}\\TODO.md")
+
+    if not TODO_md_file.exists():
+        print(f"Creating file TODO.md at {proj_path=}")
+        file = open(f"{proj_path}\\TODO.md", "w")
+        file.write("")
+        file.close()
+
+    TODO_txt_file = pathlib.Path(f"{proj_path}\\TODO.txt")
+
+    if not TODO_txt_file.exists():
+        print(f"Creating file TODO.txt at {proj_path=}")
+        file = open(f"{proj_path}\\TODO.txt", "w")
+        file.write("")
+        file.close()
 
     print(passed_args.debug, type(passed_args.debug))
     if strtobool(passed_args.debug) is True:
@@ -52,17 +69,6 @@ def main(arg_parser: argparse.ArgumentParser) -> tuple[str, ...]:
     todo_text = f"# {project_name}\n\n ## {todo_list_name}:\n\n"
 
     old_todo_text = ""
-
-    TODO_md_file = pathlib.Path(f"{proj_path}\\TODO.md")
-
-    if not TODO_md_file.is_file():
-        file = open(f"{proj_path}\\TODO.md", "w")
-        file.close()
-
-    TODO_txt_file = pathlib.Path(f"{proj_path}\\TODO.txt")
-    if not TODO_txt_file.is_file():
-        file = open(f"{proj_path}\\TODO.md", "w")
-        file.close()
 
     with open(f"{proj_path}\\TODO.txt", "r") as old_todo:
         for line in old_todo:
@@ -131,7 +137,7 @@ def main(arg_parser: argparse.ArgumentParser) -> tuple[str, ...]:
             :-1
         ]  # Ignores the final blank line in the .txt file.
         READMEmd_out.write(readmemd_text)
-        ret = f"{proj_path}\\TODO.txt", f"{proj_path}\\TODO.md"
+        ret = f"TODO list for {project_name=} successfully created.", passed_args
         return ret
 
 
@@ -158,7 +164,7 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose", action="store_true")  # on/off flag
     parser.add_argument(
         "-p",
-        "--proj_name",
+        "--project_name",
         default="Project",
         help="The name of the project displayed as the title of the list.",
     )
