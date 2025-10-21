@@ -11,13 +11,13 @@ def test_todo_debug(mocker) -> None:
     todo_md_path = f"{cwd}\\TODO.md"
     todo_txt_path = f"{cwd}\\TODO.txt"
 
-    if os.path.exists(todo_md_path):
+    if os.path.exists(todo_md_path) and "tests" in todo_md_path:
         os.remove(todo_md_path)
         print(f"File '{todo_md_path}' deleted successfully.")
     else:
         print(f"File '{todo_md_path}' not found.")
 
-    if os.path.exists(todo_txt_path):
+    if os.path.exists(todo_txt_path) and "tests" in todo_txt_path:
         os.remove(todo_txt_path)
         print(f"File '{todo_txt_path}' deleted successfully.")
     else:
