@@ -1,6 +1,3 @@
 # None
 
  ## None:
-
-                if "TODO:" in str(line):
- ")

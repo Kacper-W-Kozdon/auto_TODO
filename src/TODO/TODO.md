@@ -2,8 +2,6 @@
 
 ## None:
 
-- [ ]                if "TODO:" in str(line):
-- [ ] ")
 - [x] # SLAB Project
 
 - [x] ## TODO list:

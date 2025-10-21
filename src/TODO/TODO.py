@@ -30,6 +30,9 @@ def main(arg_parser: argparse.ArgumentParser) -> tuple[str, Passed_Args]:
     todo_list_name = passed_args.list_name
     excluded = passed_args.excluded
 
+    if "TODO.py" not in excluded:
+        excluded.append("TODO.py")
+
     TODO_md_file = pathlib.Path(f"{proj_path}\\TODO.md")
 
     if not TODO_md_file.exists():
