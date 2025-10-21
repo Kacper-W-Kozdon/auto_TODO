@@ -10,7 +10,7 @@ class Passed_Args:
     pass
 
 
-def main(arg_parser: argparse.ArgumentParser) -> None:
+def main(arg_parser: argparse.ArgumentParser) -> tuple[str, ...]:
     # args = list(map(
     #     lambda arg: arg if arg not in ["False", "True", "T", "F", "true", "false", "t", "f"] else strtobool(arg), sys_args
     # ))
@@ -25,13 +25,17 @@ def main(arg_parser: argparse.ArgumentParser) -> None:
     arg_parser.parse_args(args=sys_args, namespace=passed_args)
 
     proj_path = passed_args.cwd
+    project_name = passed_args.project_name
+    todo_list_name = passed_args.list_name
+    excluded = passed_args.excluded
+
     print(passed_args.debug, type(passed_args.debug))
     if strtobool(passed_args.debug) is True:
         print(f"Debugging {passed_args.filename}.")
         print(f"Arguments: {dir(passed_args)}.")
         print("Help messages:\n")
         print(f"{arg_parser.print_help()}")
-        return "Debugging message ends here."
+        return "Debugging message ends here.", passed_args
 
     # proj_path = pathlib.Path(__file__).parent
     scripts_paths_generator = proj_path.glob("**/*.py")
@@ -127,7 +131,8 @@ def main(arg_parser: argparse.ArgumentParser) -> None:
             :-1
         ]  # Ignores the final blank line in the .txt file.
         READMEmd_out.write(readmemd_text)
-        return
+        ret = f"{proj_path}\\TODO.txt", f"{proj_path}\\TODO.md"
+        return ret
 
 
 if __name__ == "__main__":
@@ -151,5 +156,23 @@ if __name__ == "__main__":
         choices=["False", "True", "T", "F", "true", "false", "t", "f"],
     )  # option that takes a value
     parser.add_argument("-v", "--verbose", action="store_true")  # on/off flag
+    parser.add_argument(
+        "-p",
+        "--proj_name",
+        default="Project",
+        help="The name of the project displayed as the title of the list.",
+    )
+    parser.add_argument(
+        "-ln",
+        "--list_name",
+        default="TODO list",
+        help="The header preceeding the list.",
+    )
+    parser.add_argument(
+        "-e",
+        "--excldued",
+        nargs="+",
+        help="Files and path to exclude, matched using regex rules.",
+    )
 
     main(arg_parser=parser)
