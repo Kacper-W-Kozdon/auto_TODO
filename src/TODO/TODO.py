@@ -1,13 +1,21 @@
 import argparse
 import copy
+import datetime
 import pathlib
 import sys
+from dataclasses import dataclass, field
 from distutils.util import strtobool
-from typing import Union
+from typing import Optional
 
 
+@dataclass
 class Passed_Args:
-    pass
+    filename: str = ""
+    debug: str = "false"
+    excluded: list[str] = field(default_factory=lambda: ["TODO.py"])
+    cwd: str = ""
+    list_name: Optional[str] = None
+    project_name: Optional[str] = None
 
 
 def main(arg_parser: argparse.ArgumentParser) -> tuple[str, Passed_Args]:
@@ -18,6 +26,7 @@ def main(arg_parser: argparse.ArgumentParser) -> tuple[str, Passed_Args]:
     #     print(arg)
     # for arg in args:
     #     print(arg)
+    now = datetime.datetime.now()
     passed_args = Passed_Args()
     print(f"{sys.argv=}")
     sys_args = copy.copy(sys.argv)
@@ -25,10 +34,12 @@ def main(arg_parser: argparse.ArgumentParser) -> tuple[str, Passed_Args]:
 
     arg_parser.parse_args(args=sys_args, namespace=passed_args)
 
+    print(f"{passed_args.__dict__=}")
     proj_path = pathlib.Path(passed_args.cwd)
     project_name = passed_args.project_name
     todo_list_name = passed_args.list_name
     excluded = passed_args.excluded
+    print(f"{excluded=}")
 
     if "TODO.py" not in excluded:
         excluded.append("TODO.py")
@@ -69,7 +80,7 @@ def main(arg_parser: argparse.ArgumentParser) -> tuple[str, Passed_Args]:
         if all([excluded_item not in str(script) for excluded_item in excluded]):
             scripts.append(script)
 
-    todo_text = f"# {project_name}\n\n ## {todo_list_name}:\n\n"
+    todo_text = f"# {project_name}\nDate: {now}\n\n ## {todo_list_name}:\n\n"
 
     old_todo_text = ""
 
@@ -93,7 +104,7 @@ def main(arg_parser: argparse.ArgumentParser) -> tuple[str, Passed_Args]:
 
         todo_out.write(todo_text)
 
-    readmemd_text = f"# {project_name}\n\n## {todo_list_name}:\n\n"
+    readmemd_text = f"# {project_name}\nDate: {now}\n\n## {todo_list_name}:\n\n"
     readmemd_text_old = ""
 
     with open(f"{proj_path}\\TODO.md", "r") as READMEmd_old:
@@ -129,6 +140,7 @@ def main(arg_parser: argparse.ArgumentParser) -> tuple[str, Passed_Args]:
                 if (
                     f"# {project_name}" in line_todo
                     or f"## {todo_list_name}:" in line_todo
+                    or "Date:" in line_todo
                 ):
                     continue
 
@@ -145,9 +157,9 @@ def main(arg_parser: argparse.ArgumentParser) -> tuple[str, Passed_Args]:
 
 
 if __name__ == "__main__":
-    excluded: Union[list[str], None] = None
-    todo_list_name: Union[str, None] = None
-    project_name: Union[str, None] = None
+    # excluded: Union[list[str], None] = None
+    # todo_list_name: Union[str, None] = None
+    # project_name: Union[str, None] = None
 
     parser = argparse.ArgumentParser(
         prog="auto_todo",
@@ -179,9 +191,10 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-e",
-        "--excldued",
+        "--excluded",
         nargs="+",
         help="Files and path to exclude, matched using regex rules.",
+        default="['TODO.py']",
     )
 
     main(arg_parser=parser)

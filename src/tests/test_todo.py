@@ -143,3 +143,21 @@ def test_todo_main(mocker) -> None:
     assert f"TODO list for {project_name=} successfully created." == test_ret[0]
     for item in sys_args_dict.items():
         assert item in ret_args_dict
+
+
+def test_file_creation() -> None:
+    file_md = pathlib.Path(f"{pathlib.Path(__file__).parent.resolve()}\\TODO.md")
+    assert file_md.is_file()
+    with open(file_md) as file:
+        contents = file.read()
+        assert "# Test" in contents, "Missing project name in TODO.md file."
+        assert "Date:" in contents, "Missing Date in TODO.md file."
+        assert "## Test_list:" in contents, "Missing TODO list name in TODO.md file."
+
+    file_txt = pathlib.Path(f"{pathlib.Path(__file__).parent.resolve()}\\TODO.txt")
+    assert file_txt.is_file()
+    with open(file_txt) as file:
+        contents = file.read()
+        assert "# Test" in contents, "Missing project name in TODO.txt file."
+        assert "Date:" in contents, "Missing Date in TODO.txt file."
+        assert "## Test_list:" in contents, "Missing TODO list name in TODO.txt file."
