@@ -1,4 +1,5 @@
 import datetime
+import pathlib
 from typing import Any, Union
 
 import bson
@@ -55,7 +56,7 @@ class DBManager:
         self,
         time: Union[None, datetime.datetime] = None,
         issues_collection_name: str = "",
-        project_path: str = ".\\TODO.md",
+        project_path: str = "",
     ) -> None:
         """
         The update method updates the mongodb database with the most recent issues.
@@ -70,6 +71,8 @@ class DBManager:
         max_num_documents = self.max_num_documents
         now = time
         db = self._database
+        if project_path == "":
+            project_path = pathlib.Path(__file__).resolve()
 
         # placeholder_name = "placeholder_name"
         # test_path = "\\tests\\TODO.md"
@@ -81,7 +84,7 @@ class DBManager:
             db.create_collection(issues_collection_name)
 
         # placeholder_file = open(placeholder_path)
-        project_file = open(project_path)
+        project_file = open(f"{project_path}\\TODO.md")
 
         # encoded_file = bson.encode({placeholder_name: placeholder_file.read()})
 
